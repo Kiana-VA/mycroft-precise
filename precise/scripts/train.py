@@ -26,22 +26,54 @@ from precise.util import calc_sample_hash
 
 
 class TrainScript(BaseScript):
-    usage = Usage(__doc__) | TrainData.usage
+    usage = Usage('''
+        Train a new model on a dataset
+        :model str
+            Keras model file (.net) to load from and save to
+        :-sf --samples-file str -
+            Loads subset of data from the provided json file
+            generated with precise-train-sampled
+        :-is --invert-samples
+            Loads subset of data not inside --samples-file
+        :-e --epochs int 10
+            Number of epochs to train model for
+        :-s --sensitivity float 0.2
+            Weighted loss bias. Higher values decrease increase positives
+        :-b --batch-size int 5000
+            Batch size for training
+        :-sb --save-best
+            Only save the model each epoch if its stats improve
+        :-nv --no-validation
+            Disable accuracy and validation calculation
+            to improve speed during training
+        :-mm --metric-monitor str loss
+            Metric used to determine when to save
+        :-em --extra-metrics
+            Add extra metrics during training
+        :-f --freeze-till int 0
+            Freeze all weights up to this index (non-inclusive).
+            Can be negative to wrap from end
+        ...
+    ''') | TrainData.usage
 
     def __init__(self, args):
         super().__init__(args)
 
         if args.invert_samples and not args.samples_file:
-            raise ValueError('You must specify --samples-file when using --invert-samples')
+            raise ValueError(
+                'You must specify --samples-file when using --invert-samples')
         if args.samples_file and not isfile(args.samples_file):
-            raise ValueError('No such file: ' + (args.invert_samples or args.samples_file))
+            raise ValueError('No such file: ' +
+                             (args.invert_samples or args.samples_file))
         if not 0.0 <= args.sensitivity <= 1.0:
             raise ValueError('sensitivity must be between 0.0 and 1.0')
 
         inject_params(args.model)
         save_params(args.model)
-        params = ModelParams(skip_acc=args.no_validation, extra_metrics=args.extra_metrics,
-                             loss_bias=1.0 - args.sensitivity, freeze_till=args.freeze_till)
+        params = ModelParams(skip_acc=args.no_validation,
+                             extra_metrics=args.extra_metrics,
+                             loss_bias=1.0 - args.sensitivity,
+                             freeze_till=args.freeze_till)
         self.model = create_model(args.model, params)
         self.train, self.test = self.load_data(self.args)
 
@@ -58,14 +90,15 @@ class TrainScript(BaseScript):
         self.model_base = splitext(self.args.model)[0]
 
         if args.samples_file:
-            self.samples, self.hash_to_ind = self.load_sample_data(args.samples_file, self.train)
+            self.samples, self.hash_to_ind = self.load_sample_data(
+                args.samples_file, self.train)
         else:
             self.samples = set()
             self.hash_to_ind = {}
 
         self.callbacks = [
-          checkpoint,
-          LambdaCallback(on_epoch_end=on_epoch_end),
+            checkpoint,
+            LambdaCallback(on_epoch_end=on_epoch_end),
         ]
 
     @staticmethod
@@ -83,7 +116,8 @@ class TrainScript(BaseScript):
 
     @staticmethod
     def load_data(args: Any) -> Tuple[tuple, tuple]:
-        data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
+        data = TrainData.from_both(args.tags_file, args.tags_folder,
+                                   args.folder)
         print('Data:', data)
         train, test = data.load(True, not args.no_validation)
 
@@ -109,20 +143,19 @@ class TrainScript(BaseScript):
             else:
                 chosen_samples = self.samples
             selected_indices = [self.hash_to_ind[h] for h in chosen_samples]
-            return self.train[0][selected_indices], self.train[1][selected_indices]
+            return self.train[0][selected_indices], self.train[1][
+                selected_indices]
         else:
             return self.train[0], self.train[1]
 
     def run(self):
         self.model.summary()
         train_inputs, train_outputs = self.sampled_data
-        self.model.fit(
-            train_inputs, train_outputs, self.args.batch_size,
-            self.epoch + self.args.epochs, validation_data=self.test,
-            initial_epoch=self.epoch, callbacks=self.callbacks,
-            use_multiprocessing=True, validation_freq=5,
-            verbose=1
-        )
+        self.model.fit(train_inputs, train_outputs, self.args.batch_size,
+                       self.epoch + self.args.epochs,
+                       validation_data=self.test, initial_epoch=self.epoch,
+                       callbacks=self.callbacks, use_multiprocessing=True,
+                       validation_freq=5, verbose=1)
 
 
 main = TrainScript.run_main
