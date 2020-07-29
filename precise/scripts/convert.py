@@ -77,6 +77,7 @@ class ConvertScript(BaseScript):
         tflite_model = converter.convert()
         open(out_file, "wb").write(tflite_model)
         print('Wrote to ' + out_file)
+        copyfile(model_path + '.params', out_file + '.params')
 
 
 main = ConvertScript.run_main
