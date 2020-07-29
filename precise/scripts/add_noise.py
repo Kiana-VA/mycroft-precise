@@ -27,6 +27,17 @@ Create a duplicate dataset with added noise
 :output_folder str
     Folder to write the duplicate generated dataset
 
+:-r --ratio float 0.0
+    Ratio in which to split the traning data.
+    If 0, split data based on "wake-word" and "test/wake-word"
+    structure.
+
+:-R --random
+    When using --ratio, randomize the collected data
+
+:-rn --recursive
+    Recursively search for wav files in noise_folder
+
 :-if --inflation-factor int 1
     The number of noisy samples generated per single source sample
 
@@ -54,11 +65,14 @@ from precise.util import save_audio
 
 
 class NoiseData:
-    def __init__(self, noise_folder: str):
-        self.noise_data = [
-            load_audio(file)
-            for file in glob(join(noise_folder, '*.wav'))
-        ]
+    def __init__(self, noise_folder: str, recursive: bool):
+        if recursive:
+            files = glob(join(noise_folder, '**', '*.wav'), recursive=True)
+        else:
+            files = glob(join(noise_folder, '*.wav'))
+
+        self.noise_data = [load_audio(file) for file in files]
+
         self.noise_data_id = 0
         self.noise_pos = 0
         self.repeat_count = 0
@@ -102,8 +116,8 @@ class AddNoiseScript(BaseScript):
         args = self.args
         noise_min, noise_max = args.noise_ratio_low, args.noise_ratio_high
 
-        data = TrainData.from_both(args.tags_file, args.folder, args.folder)
-        noise_data = NoiseData(args.noise_folder)
+        data = TrainData.from_both(args.tags_file, args.folder, args.folder, args.ratio, args.random)
+        noise_data = NoiseData(args.noise_folder, args.recursive)
         print('Data:', data)
 
         def translate_filename(source: str, n=0) -> str:
