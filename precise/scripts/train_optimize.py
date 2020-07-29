@@ -61,7 +61,7 @@ class TrainOptimizeScript(TrainScript):
         super().__init__(args)
         self.bb = BlackBoxOptimizer(file=self.args.trials_name)
         if not self.test:
-            data = TrainData.from_both(self.args.tags_file, self.args.tags_folder, self.args.folder)
+            data = TrainData.from_both(self.args.tags_file, self.args.tags_folder, self.args.folder,args.ratio, args.random)
             _, self.test = data.load(False, True)
 
         from tensorflow.keras.callbacks import ModelCheckpoint

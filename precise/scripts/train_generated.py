@@ -109,7 +109,7 @@ class TrainGeneratedScript(BaseScript):
             LambdaCallback(on_epoch_end=on_epoch_end)
         ]
 
-        self.data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder)
+        self.data = TrainData.from_both(args.tags_file, args.tags_folder, args.folder, args.ratio, args.random)
         pos_files, neg_files = self.data.train_files
         self.neg_files_it = iter(cycle(neg_files))
         self.pos_files_it = iter(cycle(pos_files))

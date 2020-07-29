@@ -33,6 +33,12 @@ class TrainScript(BaseScript):
         :-sf --samples-file str -
             Loads subset of data from the provided json file
             generated with precise-train-sampled
+        :-r --ratio float 0.0
+            Ratio in which to split the traning data.
+            If 0, split data based on "wake-word"/"not-wake-word" and
+            "test/wake-word"/"test/not-wake-word" structure.
+        :-R --random
+            When using --ratio, randomize the collected data.
         :-is --invert-samples
             Loads subset of data not inside --samples-file
         :-e --epochs int 10
@@ -117,7 +123,7 @@ class TrainScript(BaseScript):
     @staticmethod
     def load_data(args: Any) -> Tuple[tuple, tuple]:
         data = TrainData.from_both(args.tags_file, args.tags_folder,
-                                   args.folder)
+                                   args.folder, args.ratio, args.random)
         print('Data:', data)
         train, test = data.load(True, not args.no_validation)
 

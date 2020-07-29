@@ -95,7 +95,7 @@ class TrainIncrementalScript(TrainScript):
 
     def retrain(self):
         """Train for a session, pulling in any new data from the filesystem"""
-        folder = TrainData.from_folder(self.args.folder)
+        folder = TrainData.from_folder(self.args.folder, args.ratio, args.random)
         train_data, test_data = folder.load(True, not self.args.no_validation)
 
         train_data = TrainData.merge(train_data, self.sampled_data)

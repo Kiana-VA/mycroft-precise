@@ -16,6 +16,7 @@ Handles loading dataset into memory and processing it
 Used for training and generating statistics for a dataset
 """
 import json
+import random
 import numpy as np
 from glob import glob
 from hashlib import md5
@@ -50,7 +51,8 @@ class TrainData:
         self.train_files, self.test_files = train_files, test_files
 
     @classmethod
-    def from_folder(cls, folder: str) -> 'TrainData':
+    def from_folder(cls, folder: str, ratio=0.0,
+                    randomize=True) -> 'TrainData':
         """
         Load a set of data from a structured folder in the following format:
         {prefix}/
@@ -64,7 +66,21 @@ class TrainData:
                 not-wake-word/
                     *.wav
         """
-        return cls(find_wavs(folder), find_wavs(join(folder, 'test')))
+        if ratio <= 0.0:
+            return cls(find_wavs(folder), find_wavs(join(folder, 'test')))
+
+        ww, nww = find_wavs(folder)
+        if randomize:
+            random.shuffle(ww)
+            random.shuffle(nww)
+
+        rww = int(len(ww) * ratio)
+        rnww = int(len(nww) * ratio)
+
+        return cls(
+            (ww[0:rww], nww[0:rnww]),
+            (ww[rww + 1:], nww[rnww + 1:]),
+        )
 
     @classmethod
     def from_tags(cls, tags_file: str, tags_folder: str) -> 'TrainData':
@@ -127,9 +143,11 @@ class TrainData:
         return cls(train_files, test_files)
 
     @classmethod
-    def from_both(cls, tags_file: str, tags_folder: str, folder: str) -> 'TrainData':
+    def from_both(cls, tags_file: str, tags_folder: str, folder: str,
+                  ratio=0.0, random=False) -> 'TrainData':
         """Load data from both a database and a structured folder"""
-        return cls.from_tags(tags_file, tags_folder) + cls.from_folder(folder)
+        return cls.from_tags(tags_file, tags_folder) + cls.from_folder(
+            folder, ratio, random)
 
     def load(self, train=True, test=True, shuffle=True) -> tuple:
         """
