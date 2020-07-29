@@ -12,9 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from setuptools import setup
 
 from precise import __version__
+
+PLATFORM_REQUIREMNTS = {
+    'x86_64': [
+        'tensorflow-gpu==2.2.0',
+    ],
+    'armv7l': [
+        'https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.2.0/tensorflow-2.2.0-cp37-none-linux_armv7l.whl',
+    ],
+}
 
 setup(
     name='mycroft-precise',
@@ -24,7 +34,7 @@ setup(
     author_email='matthew.scholefield@mycroft.ai',
     description='Mycroft Precise Wake Word Listener',
     long_description='View more info at `the GitHub page '
-                     '<https://github.com/mycroftai/mycroft-precise#mycroft-precise>`_',
+    '<https://github.com/mycroftai/mycroft-precise#mycroft-precise>`_',
     url='http://github.com/MycroftAI/mycroft-precise',
     keywords='wakeword keyword wake word listener sound',
     classifiers=[
@@ -32,7 +42,6 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Text Processing :: Linguistic',
         'License :: OSI Approved :: Apache Software License',
-
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.0',
         'Programming Language :: Python :: 3.1',
@@ -41,10 +50,11 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     packages=[
         'precise',
-        'precise.scripts'
+        'precise.scripts',
     ],
     entry_points={
         'console_scripts': [
@@ -69,8 +79,8 @@ setup(
     },
     include_package_data=True,
     install_requires=[
+        *PLATFORM_REQUIREMNTS.get(os.uname().machine, []),
         'numpy',
-        'tensorflow-gpu==2.2.0',
         'sonopy',
         'pyaudio',
         'h5py',
@@ -81,6 +91,6 @@ setup(
         'attrs',
         'fitipy<1.0',
         'speechpy-fast',
-        'pyache'
-    ]
+        'pyache',
+    ],
 )
