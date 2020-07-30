@@ -22,7 +22,7 @@ PLATFORM_REQUIREMNTS = {
         'tensorflow-gpu==2.2.0',
     ],
     'armv7l': [
-        'https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.2.0/tensorflow-2.2.0-cp37-none-linux_armv7l.whl',
+        'tensorflow @ https://github.com/lhelontra/tensorflow-on-arm/releases/download/v2.2.0/tensorflow-2.2.0-cp37-none-linux_armv7l.whl',
     ],
 }
 
