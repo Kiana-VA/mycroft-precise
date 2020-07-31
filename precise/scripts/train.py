@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from fitipy import Fitipy
-from tensorflow.keras.callbacks import LambdaCallback
+from tensorflow.keras.callbacks import LambdaCallback, TensorBoard
 from os.path import splitext, isfile
 from prettyparse import Usage
 from typing import Any, Tuple
@@ -105,6 +105,7 @@ class TrainScript(BaseScript):
         self.callbacks = [
             checkpoint,
             LambdaCallback(on_epoch_end=on_epoch_end),
+            TensorBoard(log_dir=self.model_base + '.tb', histogram_freq=1),
         ]
 
     @staticmethod
